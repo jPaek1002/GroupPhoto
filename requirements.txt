@@ -1,8 +1,5 @@
-torch==1.8.1+cu102
-torchaudio==0.8.1
-torchvision==0.9.1+cu102
 numpy==1.19.5
-matplotlib==3.4.1
+matplotlib
 gdown
 opencv-python==4.5.1.48
 h5py==2.10.0
