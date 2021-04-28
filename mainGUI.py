@@ -6,8 +6,10 @@ from os import listdir
 from tkinter import *
 from tkinter import filedialog
 
-in_directory = ""
-out_directory = ""
+class args:
+    buffer = ""
+    in_path = ""
+    out_folder = ""
 
 def selectFile():
     filename = filedialog.askopenfilename(initialdir="/",
@@ -16,41 +18,62 @@ def selectFile():
                                                       "*.txt*"),
                                                      ("all files",
                                                       "*.*")))
-    label_file_explorer.configure(text="File Opened: " + filename)
+    label_in.configure(text="File Opened: " + filename)
+    if(label_in['text']=="File Opened: "):
+        args.in_path = label_in['text'].split()[2]
 
-def selectFolder():
+
+def selectInFolder():
     filename = filedialog.askdirectory()
-    label_file_explorer.configure(text="Output Directory: " + filename)
+    label_in.configure(text="Input Directory: " + filename)
+    if(label_in['text']!="Input Directory: "):
+        args.in_path = label_in['text'].split()[2]
 
-if __name__ == "__main__":
-    window = Tk()
-    window.title('Segmentation')
-    window.geometry("500x500")
-    window.config(background="white")
-    label_in = Label(window,
-                                text="File Explorer using Tkinter",
-                                width=100, height=4,
-                                fg="blue")
-    label_out = Label(window,
-                                text="File Explorer using Tkinter",
-                                width=100, height=4,
-                                fg="blue")
-    in_file = Button(window,
-                            text="Select Input Files",
-                            command=selectFile)
-    in_folder = Button(window,
-                         text="Select Input Files",
-                         command=selectFolder)
-    out_folder = Button(window,
-                            text="Select Output Folder",
-                            command=selectFolder)
-    button_exit = Button(window,
-                         text="Exit",
-                         command=exit)
-    label_in.pack()
-    label_out.pack()
-    in_file.pack()
-    in_folder.pack()
-    out_folder.pack()
-    button_exit.pack()
-    window.mainloop()
+
+def selectOutFolder():
+    filename = filedialog.askdirectory()
+    label_out.configure(text="Output Directory: " + filename)
+    if(label_in['text']!="Output Directory: "):
+        args.out_folder = label_out['text'].split()[2]
+
+
+def segment():
+    paramters = [args.buffer, args.in_path, args.out_folder]
+    seg.main(args)
+
+
+window = Tk()
+window.title('Segmentation')
+window.geometry("500x500")
+window.config(background="white")
+label_in = Label(window,
+                 text="File Explorer using Tkinter",
+                 width=100, height=4,
+                 fg="blue")
+label_out = Label(window,
+                  text="File Explorer using Tkinter",
+                  width=100, height=4,
+                  fg="blue")
+in_file = Button(window,
+                 text="Select Input Files",
+                 command=selectFile)
+in_folder = Button(window,
+                   text="Select Input Files",
+                   command=selectInFolder)
+out_folder = Button(window,
+                    text="Select Output Folder",
+                    command=selectOutFolder)
+confirm = Button(window,
+                 text="Segment Images",
+                 command=segment)
+button_exit = Button(window,
+                     text="Exit",
+                     command=exit)
+label_in.pack()
+label_out.pack()
+in_file.pack()
+in_folder.pack()
+out_folder.pack()
+confirm.pack()
+button_exit.pack()
+window.mainloop()
