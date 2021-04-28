@@ -44,7 +44,6 @@ def segment_img(img_name, output_name):
 
     # plt.imshow(mask, cmap="gray")
     # plt.show()
-
     args=Args()
     model = build_model(args)
 
@@ -59,7 +58,6 @@ def segment_img(img_name, output_name):
     trimap_im =  trimap[:,:,1] + (1-np.sum(trimap,-1))/2
     # plt.imshow(trimap_im, cmap='gray', vmin=0, vmax=1)
     # plt.show()
-
     fg, bg, alpha = pred((img/255.0)[:, :, ::-1], trimap, model)
 
     img_ = img_orig.astype(np.float32)/255
@@ -94,7 +92,6 @@ def apply_deeplab(deeplab, img, device):
 
 
 def main(args):
-
     # Get input image file names.
     img_fnames = []
     if os.path.isfile(args.in_path):
@@ -103,18 +100,16 @@ def main(args):
         fnames = [os.path.join(os.path.abspath(args.in_path),x) for x in listdir(args.in_path)]
         for fname in fnames:
             file_ext = os.path.splitext(fname)[1][1:]
-            if file_ext in ["jpg", "png", "tif"]:
+            if file_ext in ["jpg", "png", "tif", "jpeg"]:
                 img_fnames.append(fname)
     else:
         sys.exit()
-    # print(img_fnames)
-
     if not os.path.isdir(args.out_folder):
         os.makedirs(args.out_folder)
 
     for img_fname in img_fnames:
         fname = os.path.splitext(os.path.basename(img_fname))
-        out_fname = os.path.join(args.out_folder, "seg.{}".format(fname))
+        out_fname = os.path.join(args.out_folder, "seg.{}".format(fname[0]))
         segment_img(img_fname, out_fname)
 
 
