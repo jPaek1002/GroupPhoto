@@ -29,7 +29,7 @@ class Args:
 
 
 def segment_img(img_name, output_name):
-    device = torch.device("cpu")
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     deeplab = make_deeplab(device)
     f_name = img_name
     img_orig = cv2.imread(f_name, 1)
