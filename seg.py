@@ -14,7 +14,7 @@ from torchvision.models.segmentation import deeplabv3_resnet101
 from torchvision import transforms
 
 from FBA_Matting.demo import np_to_torch, pred, scale_input
-from FBA_Matting.dataloader import read_image, read_trimap
+# from FBA_Matting.dataloader import read_image, read_trimap
 from FBA_Matting.networks.models import build_model
 
 
@@ -22,6 +22,8 @@ deeplab_preprocess = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
+
+
 class Args:
     encoder = 'resnet50_GN_WS'
     decoder = 'fba_decoder'
@@ -44,18 +46,18 @@ def segment_img(img_name, output_name):
 
     # plt.imshow(mask, cmap="gray")
     # plt.show()
-    args=Args()
+    args = Args()
     model = build_model(args)
 
     trimap = np.zeros((mask.shape[0], mask.shape[1], 2))
     trimap[:, :, 1] = mask > 0
     trimap[:, :, 0] = mask == 0
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(25,25))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
 
     trimap[:, :, 0] = cv2.erode(trimap[:, :, 0], kernel)
     trimap[:, :, 1] = cv2.erode(trimap[:, :, 1], kernel)
 
-    trimap_im =  trimap[:,:,1] + (1-np.sum(trimap,-1))/2
+    # trimap_im =  trimap[:,:,1] + (1-np.sum(trimap,-1))/2
     # plt.imshow(trimap_im, cmap='gray', vmin=0, vmax=1)
     # plt.show()
     fg, bg, alpha = pred((img/255.0)[:, :, ::-1], trimap, model)
@@ -66,14 +68,14 @@ def segment_img(img_name, output_name):
 
     final_img = (fg_alpha*255).astype(np.uint8)
     # axis 0 is the row(y) and axis(x) 1 is the column
-    y,x = final_img[:,:,3].nonzero() # get the nonzero alpha coordinates
+    y, x = final_img[:, :, 3].nonzero()  # get the nonzero alpha coordinates
     minx = np.min(x)
     miny = np.min(y)
     maxx = np.max(x)
     maxy = np.max(y)
 
-    cropImg = final_img[miny:maxy, minx:maxx]
-    cv2.imwrite(output_name + ".png", cropImg)
+    crop_img = final_img[miny:maxy, minx:maxx]
+    cv2.imwrite(output_name + ".png", crop_img)
 
 
 def make_deeplab(device):
@@ -88,7 +90,7 @@ def apply_deeplab(deeplab, img, device):
     with torch.no_grad():
         output = deeplab(input_batch.to(device))['out'][0]
     output_predictions = output.argmax(0).cpu().numpy()
-    return (output_predictions == 15)
+    return output_predictions == 15
 
 
 def main(args):
@@ -97,7 +99,7 @@ def main(args):
     if os.path.isfile(args.in_path):
         img_fnames = [args.in_path]
     elif os.path.isdir(args.in_path):
-        fnames = [os.path.join(os.path.abspath(args.in_path),x) for x in listdir(args.in_path)]
+        fnames = [os.path.join(os.path.abspath(args.in_path), x) for x in listdir(args.in_path)]
         for fname in fnames:
             file_ext = os.path.splitext(fname)[1][1:]
             if file_ext in ["jpg", "png", "tif", "jpeg"]:

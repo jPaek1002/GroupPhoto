@@ -8,7 +8,7 @@ class args:
     in_path = ""
     out_folder = ""
 
-def selectFile():
+def select_file():
     filename = filedialog.askopenfilename(initialdir="/",
                                           title="Select a File",
                                           filetypes=(("Text files",
@@ -20,14 +20,14 @@ def selectFile():
         args.in_path = label_in['text'].split()[2]
 
 
-def selectInFolder():
+def select_in_folder():
     filename = filedialog.askdirectory()
     label_in.configure(text="Input Directory: " + filename)
     if(label_in['text']!="Input Directory: "):
         args.in_path = label_in['text'].split()[2]
 
 
-def selectOutFolder():
+def select_out_folder():
     filename = filedialog.askdirectory()
     label_out.configure(text="Output Directory: " + filename)
     if(label_in['text']!="Output Directory: "):
@@ -53,13 +53,13 @@ label_out = Label(window,
                   fg="blue")
 in_file = Button(window,
                  text="Select Input Files",
-                 command=selectFile)
+                 command=select_file)
 in_folder = Button(window,
                    text="Select Input Files",
-                   command=selectInFolder)
+                   command=select_in_folder)
 out_folder = Button(window,
                     text="Select Output Folder",
-                    command=selectOutFolder)
+                    command=select_out_folder)
 confirm = Button(window,
                  text="Segment Images",
                  command=segment)
