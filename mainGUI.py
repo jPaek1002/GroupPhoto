@@ -1,8 +1,5 @@
-import cv2
-import os
 import seg
 
-from os import listdir
 from tkinter import *
 from tkinter import filedialog
 
