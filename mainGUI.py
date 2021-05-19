@@ -8,18 +8,6 @@ class args:
     in_path = ""
     out_folder = ""
 
-def select_file():
-    filename = filedialog.askopenfilename(initialdir="/",
-                                          title="Select a File",
-                                          filetypes=(("Text files",
-                                                      "*.txt*"),
-                                                     ("all files",
-                                                      "*.*")))
-    label_in.configure(text="File Opened: " + filename)
-    if(label_in['text']=="File Opened: "):
-        args.in_path = label_in['text'].split()[2]
-
-
 def select_in_folder():
     filename = filedialog.askdirectory()
     label_in.configure(text="Input Directory: " + filename)
@@ -51,9 +39,6 @@ label_out = Label(window,
                   text="File Explorer using Tkinter",
                   width=100, height=4,
                   fg="blue")
-in_file = Button(window,
-                 text="Select Input Files",
-                 command=select_file)
 in_folder = Button(window,
                    text="Select Input Files",
                    command=select_in_folder)
@@ -68,7 +53,6 @@ button_exit = Button(window,
                      command=exit)
 label_in.pack()
 label_out.pack()
-in_file.pack()
 in_folder.pack()
 out_folder.pack()
 confirm.pack()
