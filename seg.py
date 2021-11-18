@@ -115,12 +115,14 @@ def segment_cv_img(src_img, output_name):
     final_img = (fg_alpha*255).astype(np.uint8)
     # axis 0 is the row(y) and axis(x) 1 is the column
     y, x = final_img[:, :, 3].nonzero()  # get the nonzero alpha coordinates
-    minx = np.min(x)
-    miny = np.min(y)
-    maxx = np.max(x)
-    maxy = np.max(y)
+    if len(x) != 0 and len(y) != 0:
+        minx = np.min(x)
+        miny = np.min(y)
+        maxx = np.max(x)
+        maxy = np.max(y)
+        crop_img = final_img[miny:maxy, minx:maxx]
 
-    crop_img = final_img[miny:maxy, minx:maxx]
+    crop_img = final_img
     cv2.imwrite(output_name + ".png", crop_img)
 
 def make_deeplab(device):
@@ -172,7 +174,7 @@ def main(args):
         print(len(imgs))
         for img in imgs:
             fname = os.path.splitext(os.path.basename(img_fnames[0]))
-            out_fname = os.path.join(args.out_folder, str(count))
+            out_fname = os.path.join(args.out_folder, "fname_"+str(count))
             print(out_fname)
             segment_cv_img(img, out_fname)
             count = count + 1
