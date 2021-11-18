@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 # import matplotlib.pyplot as plt
 from os import listdir
-# from os.path import isfile, join
+from os.path import isfile, join
 
 import torch
 from torchvision.models.segmentation import deeplabv3_resnet101
