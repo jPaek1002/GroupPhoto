@@ -17,7 +17,6 @@ from FBA_Matting.demo import np_to_torch, pred, scale_input
 # from FBA_Matting.dataloader import read_image, read_trimap
 from FBA_Matting.networks.models import build_model
 
-
 deeplab_preprocess = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
@@ -40,6 +39,7 @@ def segment_img(img_name, output_name):
     # plt.show()
 
     k = min(1.0, 1024/max(img_orig.shape[0], img_orig.shape[1]))
+    k = min(1.0, 1024 / max(img_orig.shape[0], img_orig.shape[1]))
     img = cv2.resize(img_orig, None, fx=k, fy=k, interpolation=cv2.INTER_LANCZOS4)
 
     mask = apply_deeplab(deeplab, img, device)
@@ -61,12 +61,14 @@ def segment_img(img_name, output_name):
     # plt.imshow(trimap_im, cmap='gray', vmin=0, vmax=1)
     # plt.show()
     fg, bg, alpha = pred((img/255.0)[:, :, ::-1], trimap, model)
+    fg, bg, alpha = pred((img / 255.0)[:, :, ::-1], trimap, model)
 
-    img_ = img_orig.astype(np.float32)/255
+    img_ = img_orig.astype(np.float32) / 255
     alpha_ = cv2.resize(alpha, (img_.shape[1], img_.shape[0]), cv2.INTER_LANCZOS4)
     fg_alpha = np.concatenate([img_, alpha_[:, :, np.newaxis]], axis=2)
 
     final_img = (fg_alpha*255).astype(np.uint8)
+    final_img = (fg_alpha * 255).astype(np.uint8)
     # axis 0 is the row(y) and axis(x) 1 is the column
     y, x = final_img[:, :, 3].nonzero()  # get the nonzero alpha coordinates
     minx = np.min(x)
@@ -77,6 +79,7 @@ def segment_img(img_name, output_name):
     crop_img = final_img[miny:maxy, minx:maxx]
     cv2.imwrite(output_name + ".png", crop_img)
 
+
 def segment_cv_img(src_img, output_name):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     deeplab = make_deeplab(device)
@@ -85,7 +88,7 @@ def segment_cv_img(src_img, output_name):
     # plt.imshow(img_orig[:, :, ::-1])
     # plt.show()
 
-    k = min(1.0, 1024/max(img_orig.shape[0], img_orig.shape[1]))
+    k = min(1.0, 1024 / max(img_orig.shape[0], img_orig.shape[1]))
     img = cv2.resize(img_orig, None, fx=k, fy=k, interpolation=cv2.INTER_LANCZOS4)
 
     mask = apply_deeplab(deeplab, img, device)
@@ -106,17 +109,18 @@ def segment_cv_img(src_img, output_name):
     # trimap_im =  trimap[:,:,1] + (1-np.sum(trimap,-1))/2
     # plt.imshow(trimap_im, cmap='gray', vmin=0, vmax=1)
     # plt.show()
-    fg, bg, alpha = pred((img/255.0)[:, :, ::-1], trimap, model)
+    fg, bg, alpha = pred((img / 255.0)[:, :, ::-1], trimap, model)
 
-    img_ = img_orig.astype(np.float32)/255
+    img_ = img_orig.astype(np.float32) / 255
     alpha_ = cv2.resize(alpha, (img_.shape[1], img_.shape[0]), cv2.INTER_LANCZOS4)
     fg_alpha = np.concatenate([img_, alpha_[:, :, np.newaxis]], axis=2)
 
-    final_img = (fg_alpha*255).astype(np.uint8)
+    final_img = (fg_alpha * 255).astype(np.uint8)
     # axis 0 is the row(y) and axis(x) 1 is the column
     y, x = final_img[:, :, 3].nonzero()  # get the nonzero alpha coordinates
     if len(x) != 0 and len(y) != 0:
         minx = np.min(x)
+<<<<<<< Updated upstream
         miny = np.min(y)
         maxx = np.max(x)
         maxy = np.max(y)
@@ -124,6 +128,14 @@ def segment_cv_img(src_img, output_name):
 
     crop_img = final_img
     cv2.imwrite(output_name + ".png", crop_img)
+=======
+        maxx = np.max(x)
+        miny = np.min(y)
+        maxy = np.max(y)
+        crop_img = final_img[miny:maxy, minx:maxx]
+        cv2.imwrite(output_name + ".png", crop_img)
+
+>>>>>>> Stashed changes
 
 def make_deeplab(device):
     deeplab = deeplabv3_resnet101(pretrained=True).to(device)
@@ -145,26 +157,43 @@ def main(args):
     img_fnames = []
     imgs = []
     video = False
+    div = args.div
+    print(args.in_path)
     if os.path.isfile(args.in_path):
         img_fnames = [args.in_path]
+        file_ext = os.path.splitext(args.in_path)[1][1:]
+        if file_ext in ["mp4", "MOV", "mov"]:
+            video = True
+            img_fnames.append(args.in_path)
+            cap = cv2.VideoCapture(args.in_path)
+            success, img = cap.read()
+            fno = 0
+            while success:
+                if fno % div == 0:
+                    imgs.append(img)
+                # read next frame
+                success, img = cap.read()
+                fno = fno + 1
     elif os.path.isdir(args.in_path):
         fnames = [os.path.join(os.path.abspath(args.in_path), x) for x in listdir(args.in_path)]
         for fname in fnames:
             file_ext = os.path.splitext(fname)[1][1:]
-            if file_ext in ["jpg", "png", "tif", "jpeg"]:
+            print(file_ext)
+            # HEIC doesn't work, convert it
+            if file_ext in ["jpg", "png", "PNG", "tif", "jpeg", "JPG", "JPEG", "jfif"]:
                 img_fnames.append(fname)
-            elif file_ext in ["mp4"]:
+            elif file_ext in ["mp4", "mov", "MOV"]:
                 video = True
                 img_fnames.append(fname)
                 cap = cv2.VideoCapture(fname)
                 success, img = cap.read()
                 fno = 0
                 while success:
-                    if fno % 10 == 0:
+                    if fno % div == 0:
                         imgs.append(img)
                     # read next frame
                     success, img = cap.read()
-                    fno = fno+1
+                    fno = fno + 1
     else:
         sys.exit()
     if not os.path.isdir(args.out_folder):
@@ -180,6 +209,7 @@ def main(args):
             count = count + 1
     else:
         for img_fname in img_fnames:
+            print(img_fname)
             fname = os.path.splitext(os.path.basename(img_fname))
             out_fname = os.path.join(args.out_folder, "seg.{}".format(fname[0]))
             segment_img(img_fname, out_fname)
@@ -189,7 +219,7 @@ def parse_arguments(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("--in_path", required=True, help="Input path")
     parser.add_argument("--out_folder", default=".", help="Output folder")
-
+    parser.add_argument("--divider", default=1, help="segments every n frames")
     args = parser.parse_args(argv)
 
     return args

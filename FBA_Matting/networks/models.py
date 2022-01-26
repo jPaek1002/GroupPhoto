@@ -53,7 +53,6 @@ class ModelBuilder():
         num_channels = 3 + 6 + 2
 
         if(num_channels > 3):
-            print(f'modifying input layer to accept {num_channels} channels')
             net_encoder_sd = net_encoder.state_dict()
             conv1_weights = net_encoder_sd['conv1.weight']
 
